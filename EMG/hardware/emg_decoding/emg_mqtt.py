@@ -1,6 +1,6 @@
 from paho.mqtt import client as mqtt_client
 
-broker = '3.128.94.230'
+broker = # ENTER BROKER IP HERE
 port = 1883
 topic = "test"
 client_id = 'ba65a9d7-0107-465b-8909-23819238909000'
