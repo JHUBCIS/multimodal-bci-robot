@@ -1,0 +1,10 @@
+
+IF YOU ARE SYNCING WITH THE LIVE PLEASE ADD KEY PRESSES ON MAC OS FOR THE LOVE OF ALL THAT IS HOLY
+MAKE SURE YOU ARE ON SUDO
+
+
+# Add a the Tinker module for mac os
+brew install python-tk
+
+# For binding use python keyboard
+import keyboard
