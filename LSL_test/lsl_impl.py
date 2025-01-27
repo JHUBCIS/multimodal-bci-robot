@@ -5,9 +5,13 @@ import time
 import random
 import pandas as pd
 import numpy as np
+import socket
+import csv
+from scipy.stats import norm
 
 def acceptNewValue(elem : list):
    global global_values
+   global state_s
 
    
    if counter < (num_samples_per):
@@ -16,8 +20,11 @@ def acceptNewValue(elem : list):
    global_values = np.concatenate((elem, global_values[0:-batch_size]), axis=0)
 
    val = classifier.classify_cca(global_values)
-   print(np.argmax(val))
+   if state_s<4:
+      print(np.argmax(val)," ", val)
+   return val
 
+SEGREGATED_COLLECTION = True
   
 # initialize the streaming layer
 finished = False
@@ -42,7 +49,7 @@ num_samples_per = SAMPLE_RATE * WINDOW_SIZE
 
 classifier = CCAClassifier();
 
-batch_size = 750
+batch_size = 127 #750
 batch = []
 global_values = np.zeros((num_samples_per,8))
 
@@ -54,7 +61,25 @@ time_recording = 1
 
 inf_run = True
 
+calibration = {"blank": [], "slow": [], "fast": []}
+state_s = 0
+
+super_batch = []
+logit_super = []
+
 file = -1
+
+# UDP_IP = "127.0.0.1"
+# UDP_PORT = 800
+
+# sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# sock.bind(UDP_IP, UDP_PORT)
+
+# calibration_data = {'2': [],
+#                     '3': [],
+#                     '4': []}
+
+first = True
 # if inf_run:
    # file = open("inf_run.csv", "w")
    # file.write(",".join(columns) + ", \n")
@@ -72,6 +97,10 @@ while not finished:
    #print("Latency: ", (timestamp-prev_timestamp), " Intended: ", em)
    prev_timestamp = timestamp
 
+   # calibration_bytes, addr = sock.recvfrom(1024)
+   # calibration_code = calibration_bytes.decode()
+
+   # print(calibration_code)
 
    # updating data dictionary with newly transmitted samples   
    i = 0
@@ -101,12 +130,68 @@ while not finished:
    
    if cca_classification_on:
 
-      batch.append(np.array(data[0:8]))
+      batch.insert(0,np.array(data[0:8]))
 
       if (counter) % (batch_size) == 0:
+         logits = acceptNewValue(batch.copy())
+         if logits != None and state_s < 4:
+            super_batch.append(logits[0]-logits[1])
+            logit_super.append(logits)
 
-         acceptNewValue(batch.copy())
+            # if calibration_code == 2:
+            #    calibration_data['2'].append(logits[0]-logits[1])
+            # elif calibration_code == 3:
+            #    calibration_data['3'].append(logits[0]-logits[1])
+            # elif calibration_code == 4:
+            #    calibration_data['4'].append(logits[0]-logits[1])
+            # else:
+            #    pass
 
+         if first:
+            first = False
+
+         if SEGREGATED_COLLECTION and state_s < 4:
+
+            if (counter % (batch_size * 120)) == 0:
+               super_batch = []
+               logit_super = []
+               print("----------------------------unpausing--------------------------")
+
+            if (counter % (batch_size * 120)) == (batch_size * 100):
+               # slow_hz, fast_hz = zip(*super_batch)
+               print(f"stdev: {np.std(super_batch)},  mean: {np.mean(super_batch)} range: {max(super_batch) - min(super_batch)}, max: {max(super_batch)}, min: {min(super_batch)}")
+               if (state_s == 1):
+                  calibration["blank"] = super_batch
+               elif (state_s == 2):
+                  calibration["slow"] = super_batch
+               elif (state_s == 3):
+                  calibration["fast"] = super_batch
+                  # write baysian calc
+
+                  blank_params = norm.fit(calibration["blank"])
+                  slow_params = norm.fit(calibration["slow"])
+                  fast_params = norm.fit(calibration["fast"])
+                  print("------------------------youre at the end lol ---------------------")
+
+
+
+               state_s += 1
+
+               with open(f"data_{counter/batch_size}.csv", 'w', newline='') as File:
+                  csvwriter = csv.writer(File)
+
+                  csvwriter.writerows(logit_super)   
+               # print(f"The stdev of slow: {np.std(slow_hz)}, the mean is {np.mean(slow_hz)} and the range is {max(slow_hz) - min(slow_hz)}, with the max being {max(slow_hz)}, and the min being {min(slow_hz)}")
+
+               print("-------------------get ready to switch--------------------------")
+         else:
+            sample = logits[0]-logits[1]
+            p_blank = norm.pdf(sample, loc=blank_params[0], scale=blank_params[1])
+            p_slow = norm.pdf(sample, loc=slow_params[0], scale=slow_params[1])
+            p_fast = norm.pdf(sample, loc=fast_params[0], scale=fast_params[1])
+
+            pred = np.argmax([p_blank, p_slow, p_fast])
+            print(pred)
 
          batch = []
 

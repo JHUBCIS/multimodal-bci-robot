@@ -43,7 +43,7 @@ class CCAClassifier:
         notch_filtered = notch_filtered.T
 
         #print(notch_filtered.shape)
-        notch_filtered = np.array(notch_filtered[0:250 * self.tmax])
+        notch_filtered = np.array(notch_filtered[:int(250 * (self.tmax))])
         #print(notch_filtered.shape)
 
         #for channel in notch_filtered:
