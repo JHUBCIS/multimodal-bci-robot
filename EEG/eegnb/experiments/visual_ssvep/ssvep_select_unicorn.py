@@ -83,7 +83,7 @@ class VisualSSVEP_select_unicorn(Experiment.BaseExperiment):
         def log_key_input():
             def on_key_event(event):
                 if event.name == 'a' or event.name == 's':
-                    marker = b"1" if event.name == 'a' else b"2" 
+                    marker = b"1" if event.name == 'left' else b"2" 
                     # print("Marker logged:", marker)
                     # timestamp = time()
                     self.socket.sendto(marker, self.endPoint)
@@ -113,16 +113,16 @@ class VisualSSVEP_select_unicorn(Experiment.BaseExperiment):
             wrapWidth=30,
             alignText='center',
             color='white')
-        
+         
         self._stim1.setAutoDraw(True)
-        self._stim1_neg.setAutoDraw(False)
+        self._stim1_neg.setAutoDraw(False)  
         self._stim2.setAutoDraw(True)
-        self._stim2_neg.setAutoDraw(False)
+        self._stim2_neg.setAutoDraw(False) 
 
         while self.running and (time()-start_time) <= self.record_duration:
             # present SSVEP for 20 seconds
             trial_start_time = time()
-            while self.running and time() < (trial_start_time + 20): 
+            while self.running: #and time() < (trial_start_time + 20): 
                 current_time = time()
                 if current_time >= next_flip_time_1:
                     self._stim1.setAutoDraw(not self._stim1.autoDraw)  # Toggle visibility
@@ -136,18 +136,17 @@ class VisualSSVEP_select_unicorn(Experiment.BaseExperiment):
                     # self.window.flip()
                     next_flip_time_2 += cycle_duration_2
                 self.window.flip()
-            
+
             self._stim1.setAutoDraw(False)
             self._stim1_neg.setAutoDraw(True)
             self._stim2.setAutoDraw(False)
             self._stim2_neg.setAutoDraw(True)
             self.window.flip()
-
             # pause for 5 seconds
-            pause_start_time = time()
-            while self.running and time() < (pause_start_time + 5): # pause for 5 seconds
-                pause_prompt.draw()
-                self.window.flip()
+            # pause_start_time = time()
+            # while self.running and time() < (pause_start_time + 5): # pause for 5 seconds
+            #     pause_prompt.draw()
+            #     self.window.flip()
 
 
             # core.wait(5) # wait for 5 seconds
@@ -159,7 +158,97 @@ class VisualSSVEP_select_unicorn(Experiment.BaseExperiment):
         
         keyboard.unhook_all()
 
+    def calibrate_rest(self):
+        calibrate_prompt = visual.TextStim(
+            self.window,
+            text = ("Calibrating rest for 30s \n"
+                    "Focus on the cross \n"
+                    "Press space to start"),
+            wrapWidth=30,
+            alignText='center',
+            color='white'
+        )
+        calibrate_prompt.draw()
+        self.window.flip()
+        event.waitKeys(keyList="space")
+        focus_prompt = visual.TextStim(
+            self.window,
+            text = ("+"),
+            wrapWidth=30,
+            alignText='center',
+            color='white'
+        )
+        calibrate_rest_start_time = time()
+        while (True):
+            #self.socket.sendto(b'2', self.endPoint)
+            focus_prompt.draw()
+            self.window.flip()
+            if keyboard.is_pressed('a'):
+                break
 
+    def calibrate_left(self):
+        calibrate_prompt = visual.TextStim(
+            self.window,
+            text = ("Calibrating left stimulus for 30s \n"
+                    "Focus on the left stimulus \n"
+                    "Press space to start"),
+            wrapWidth=30,
+            alignText='center',
+            color='white'
+        )
+        calibrate_prompt.draw()
+        self.window.flip()
+        event.waitKeys(keyList="space")
+        start_time = time()
+        cycle_duration_1 = 1.0 / self.freq1  # Duration of one cycle of _stim1
+        next_flip_time_1 = start_time + cycle_duration_1
+        self._stim1.setAutoDraw(True)
+        self._stim1_neg.setAutoDraw(False)
+        calibrate_left_start_time = time()
+        while (True) :
+            #self.socket.sendto(b'3', self.endPoint)      
+            current_time = time()
+            if current_time >= next_flip_time_1:
+                self._stim1.setAutoDraw(not self._stim1.autoDraw)  # Toggle visibility
+                self._stim1_neg.setAutoDraw(not self._stim1_neg.autoDraw)  # Toggle visibility
+                self.window.flip()
+                next_flip_time_1 += cycle_duration_1   
+            if keyboard.is_pressed('a'):
+                break 
+        self._stim1.setAutoDraw(False)
+        self._stim1_neg.setAutoDraw(True)   
+    def calibrate_right(self):
+        calibrate_prompt = visual.TextStim(
+            self.window,
+            text = ("Calibrating right stimulus for 30s \n"
+                    "Focus on the right stimulus \n"
+                    "Press space to start"),
+            wrapWidth=30,
+            alignText='center',
+            color='white'
+        )
+        calibrate_prompt.draw()
+        self.window.flip()
+        event.waitKeys(keyList="space")
+        start_time = time()
+        cycle_duration_2 = 1.0 / self.freq2  # Duration of one cycle of _stim2
+        next_flip_time_2 = start_time + cycle_duration_2
+        self._stim2.setAutoDraw(True)
+        self._stim2_neg.setAutoDraw(False)
+        calibrate_right_start_time = time()
+        while (True) :
+            #self.socket.sendto(b'4', self.endPoint)
+            
+            current_time = time()
+            if current_time >= next_flip_time_2:
+                self._stim2.setAutoDraw(not self._stim2.autoDraw)  # Toggle visibility
+                self._stim2_neg.setAutoDraw(not self._stim2_neg.autoDraw)  # Toggle visibility
+                self.window.flip()
+                next_flip_time_2 += cycle_duration_2
+            if keyboard.is_pressed('a'):
+                break
+        self._stim2.setAutoDraw(False)
+        self._stim2_neg.setAutoDraw(False)
     def setup(self, instructions=True):
 
             # Initializing the record duration and the marker names
@@ -180,6 +269,9 @@ class VisualSSVEP_select_unicorn(Experiment.BaseExperiment):
             
             # Show Instruction Screen if not skipped by the user
             if instructions:
+                self.calibrate_rest()
+                self.calibrate_left()
+                self.calibrate_right()
                 self.show_instructions()
 
             # Checking for EEG to setup the EEG stream
