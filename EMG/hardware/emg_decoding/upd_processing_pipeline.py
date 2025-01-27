@@ -12,7 +12,7 @@ class BCIProcessingPipeline:
     # Use job lib to load the files
 
 
-    def __init__(self, buffer_size = 10, file_one = '../saved_models/emg_0_model.pkl', file_two = '../saved_models/emg_1_model.pkl'):
+    def __init__(self, buffer_size = 10, file_one = 'saved_models/emg_0_model.pkl', file_two = 'saved_models/emg_1_model.pkl'):
 
         # intialize the buffer size and the buffer
         self.buffer_size = buffer_size

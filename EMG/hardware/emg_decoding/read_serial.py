@@ -34,9 +34,9 @@ listener.start()
 
 if __name__ == '__main__':
     
-    pipeline = BCIProcessingPipeline(buffer_size=10)
-    client = connect_mqtt()
-    port_id = "/dev/ttyACM0"
+    pipeline = BCIProcessingPipeline(buffer_size=100)
+    # client = connect_mqtt()
+    port_id = "COM12"
     
     print('Running. Press CTRL-C to exit.')
     with serial.Serial(port_id, 115200, timeout=1) as arduino:
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
             while True:
 
-                sleep(0.0001) # wait for arduino to answer
+                sleep(0.001) # wait for arduino to answer
 
                 while arduino.inWaiting()==0: pass
                 if  arduino.inWaiting()>0: 
@@ -62,8 +62,8 @@ if __name__ == '__main__':
                         Emg_bp0, Emg_bp1 = [float(x) for x in s.decode('utf-8').strip().split(' ')]
                         cycles += 1
                         acc += Emg_bp1
-                    except:
-                        print('Error decoding message')
+                    except Exception as e:
+                        print('Error decoding message', e)
                         continue
 
                 # prints average EMG activity every 100 cycles
@@ -75,18 +75,18 @@ if __name__ == '__main__':
 
                     if output[0] == 1:
                         print('Cheek :O')
-                        if is_space_pressed:
-                            publish(client, '1')
+                    #     if is_space_pressed:
+                            # publish(client, '1')
                     if output[1] == 1:
                         print('Neck B)')
-                        if is_space_pressed:
-                            publish(client, '2')
+                    #     if is_space_pressed:
+                            # publish(client, '2')
 
                     # if output[0] == 1:
                     #     print('Cheek :O')
-                    #     # if keyboard.is_pressed('space'):
-                    #     publish(client, '1')
+                        # if keyboard.is_pressed('space'):
+                        # publish(client, '1')
                     # if output[1] == 1:
                     #     print('Neck B)')
-                    #     # if keyboard.is_pressed('space'):
-                    #     publish(client, '2')
+                        # if keyboard.is_pressed('space'):
+                        # publish(client, '2')
