@@ -15,12 +15,14 @@ class TurtleController:
         
         # Dot writing turtle init
         self.dot = turtle.Turtle()
+        self.dot.speed(0)
         self.dot.hideturtle()
         self.dot.penup()
         self.dot.color('red')
         
         # Score display turtle init
         self.score_display = turtle.Turtle()
+        self.dot.speed(0)
         self.score_display.hideturtle()
         self.score_display.penup()
         self.score_display.goto(0, 250)
