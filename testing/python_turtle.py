@@ -62,7 +62,7 @@ class TurtleController:
             self.create_new_dot()
 
     def update(self):
-        # oooga booga - i should use a switch statement - but i dont want to 
+        # i should use a switch statement - but i dont want to 
         if self.key_states['w']:
             self.turtle.forward(self.MOVE_DISTANCE)
         if self.key_states['s']:
