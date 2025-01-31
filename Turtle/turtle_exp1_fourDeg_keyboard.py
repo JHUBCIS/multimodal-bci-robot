@@ -1,4 +1,5 @@
 import turtle
+from playsound import playsound
 # import socket
 # import threading
 # import queue
@@ -125,9 +126,13 @@ class TurtleController:
         self.rotating_left = not self.rotating_left
    
     def toggle_turtle1(self):
+        playsound(r"C:\Users\kthbl\Desktop\ssvep_live_decode\multimodal-bci-robot\LSL_test\blue.wav")
         self.active_turtle = self.turtle1
+        
+
 
     def toggle_turtle2(self):
+        playsound(r"C:\Users\kthbl\Desktop\ssvep_live_decode\multimodal-bci-robot\LSL_test\green.wav")
         self.active_turtle = self.turtle2
 
     

@@ -19,6 +19,7 @@ if __name__ == '__main__':
     print('Running. Press CTRL-C to exit.')
     
     cur_state = (0, 0)
+    press_time = 0
 
     with serial.Serial(port_id, 115200, timeout=1) as arduino:
 
@@ -55,11 +56,24 @@ if __name__ == '__main__':
 
 
                 # Suppose output is [1,0] for CHEEK, [0,1] for NECK
-                w
+                
                     # Send command to turtle
                 # elif output[1] == 0:
                 #     if cur_state[1] == 1:
                         # pyautogui.keyUp('d')
+
+                if output[0] == 1 and (time.time() - press_time) > 0.5:
+                    print('Cheek :0')
+                    press_time = time.time()
+                    keyboard.press('a')
+                    keyboard.release('a')
+
+
+                if output[1] == 1 and (time.time() - press_time) > 0.5:
+                    print('Neck')
+                    press_time = time.time()
+                    keyboard.press('d')
+                    keyboard.release('d')
 
                 cur_state = output
 
