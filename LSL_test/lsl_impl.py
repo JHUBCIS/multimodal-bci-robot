@@ -8,6 +8,7 @@ import numpy as np
 import socket
 import csv
 from scipy.stats import norm
+from pynput.keyboard import Controller
 
 def acceptNewValue(elem : list):
    global global_values
@@ -37,6 +38,9 @@ columns=['Time','FZ', 'C3', 'CZ', 'C4', 'PZ', 'PO7', 'OZ', 'PO8','AccX','AccY','
 data_dict = dict((k, []) for k in columns)
 
 prev_timestamp = 0
+
+keyboard = Controller()
+press_time = 0
 
 total_time = 0
 counter = 1
@@ -152,12 +156,12 @@ while not finished:
 
          if SEGREGATED_COLLECTION and state_s < 4:
 
-            if (counter % (batch_size * 120)) == 0:
+            if (counter % (batch_size * 70)) == 0:
                super_batch = []
                logit_super = []
                print("----------------------------unpausing--------------------------")
 
-            if (counter % (batch_size * 120)) == (batch_size * 100):
+            if (counter % (batch_size * 70)) == (batch_size * 50):
                # slow_hz, fast_hz = zip(*super_batch)
                print(f"stdev: {np.std(super_batch)},  mean: {np.mean(super_batch)} range: {max(super_batch) - min(super_batch)}, max: {max(super_batch)}, min: {min(super_batch)}")
                if (state_s == 1):
@@ -190,10 +194,34 @@ while not finished:
             p_slow = norm.pdf(sample, loc=slow_params[0], scale=slow_params[1])
             p_fast = norm.pdf(sample, loc=fast_params[0], scale=fast_params[1])
 
-            pred = np.argmax([p_blank, p_slow, p_fast])
+            # pred = np.argmax([p_blank, p_slow, p_fast])
+            
+            # if sample > slow_params[0]:
+            if sample > blank_params[0] + 2*blank_params[1]:
+               pred = 1
+            # elif sample < fast_params[0]:
+            elif sample < blank_params[0] - 2*blank_params[1]:
+               pred = 2
+            else:
+               pred = 0
+
             print(pred)
 
+            if pred == 1 and (time.time() - press_time) > 2:
+               print('Slow...')
+               press_time = time.time()
+               keyboard.press('w')
+               keyboard.release('w')
+
+
+            if pred == 2 and (time.time() - press_time) > 2:
+               print('Fast!!!')
+               press_time = time.time()
+               keyboard.press('s')
+               keyboard.release('s')
+
          batch = []
+
 
       #else:
 
