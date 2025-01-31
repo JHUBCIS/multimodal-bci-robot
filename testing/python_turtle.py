@@ -15,12 +15,14 @@ class TurtleController:
         
         # Dot writing turtle init
         self.dot = turtle.Turtle()
+        self.dot.speed(0)
         self.dot.hideturtle()
         self.dot.penup()
         self.dot.color('red')
         
         # Score display turtle init
         self.score_display = turtle.Turtle()
+        self.dot.speed(0)
         self.score_display.hideturtle()
         self.score_display.penup()
         self.score_display.goto(0, 250)
@@ -61,8 +63,22 @@ class TurtleController:
             self.update_score_display()
             self.create_new_dot()
 
+    def check_out_of_bounds(self):
+        # Wrap around if turtle goes beyond ±290 in either x or y
+        x, y = self.turtle.position()
+        if x > 290:
+            x = 290
+        elif x < -290:
+            x = -290
+        if y > 290:
+            y = 290
+        elif y < -290:
+            y = -290
+
+        self.turtle.goto(x, y)
+
     def update(self):
-        # oooga booga - i should use a switch statement - but i dont want to 
+
         if self.key_states['w']:
             self.turtle.forward(self.MOVE_DISTANCE)
         if self.key_states['s']:
@@ -71,8 +87,9 @@ class TurtleController:
             self.turtle.left(self.TURN_ANGLE)
         if self.key_states['d']:
             self.turtle.right(self.TURN_ANGLE)
-            
+
         self.check_collision()
+        self.check_out_of_bounds()
         self.screen.ontimer(self.update, self.UPDATE_INTERVAL)
 
     def run(self):
