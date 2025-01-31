@@ -1,92 +1,129 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# lsusb to check device name
-#dmesg | grep "tty" to find port name
-
 import serial
-# import threading
-
-from time import sleep
+import time
 from upd_processing_pipeline import BCIProcessingPipeline
-from emg_mqtt import connect_mqtt, publish
-# import keyboard
-from pynput import keyboard
+import socket
+import pyautogui
+from pynput.keyboard import Controller
 
-# Re-write the code to take advantage of parallel processing
-# Use joblib to load the files
-
-is_space_pressed = False
-
-def on_press(key):
-    global is_space_pressed
-    if key == keyboard.Key.space:
-        is_space_pressed = True
-
-def on_release(key):
-    global is_space_pressed
-    if key == keyboard.Key.space:
-        is_space_pressed = False
-
-listener = keyboard.Listener(
-    on_press=on_press,
-    on_release=on_release)
-listener.start()
+# HOST = 'localhost'
+# PORT = 5555
 
 if __name__ == '__main__':
     
-    pipeline = BCIProcessingPipeline(buffer_size=100)
-    # client = connect_mqtt()
+    pipeline = BCIProcessingPipeline(buffer_size=10)
     port_id = "COM12"
     
+    keyboard = Controller()
+    press_time = 0
+
     print('Running. Press CTRL-C to exit.')
+    
+    cur_state = (0, 0)
+
     with serial.Serial(port_id, 115200, timeout=1) as arduino:
 
-        sleep(0.1) # wait for serial to open
+        time.sleep(0.1)  # Wait for serial to open
 
         if arduino.isOpen():
-            print("{} connected!".format(arduino.port))
+            print(f"{arduino.port} connected!")
 
             cycles = 0
             acc = 0
 
             while True:
+                # Wait for data from Arduino
+                while arduino.inWaiting() == 0:
+                    pass
+                s_line = arduino.readline()
 
-                sleep(0.001) # wait for arduino to answer
+                try:
+                    Emg_bp0, Emg_bp1 = [
+                        float(x) for x in s_line.decode('utf-8').strip().split(' ')
+                    ]
+                except Exception as e:
+                    print('Error decoding message', e)
+                    continue
 
-                while arduino.inWaiting()==0: pass
-                if  arduino.inWaiting()>0: 
-                    # print(str(arduino.readline()))
-                    s = arduino.readline()
-                    # print(s)
-                    try:
-                        Emg_bp0, Emg_bp1 = [float(x) for x in s.decode('utf-8').strip().split(' ')]
-                        cycles += 1
-                        acc += Emg_bp1
-                    except Exception as e:
-                        print('Error decoding message', e)
-                        continue
+                cycles += 1
+                acc += Emg_bp1
+                if cycles % 100 == 0:
+                   print(f"Avg EMG: {acc/100}")
+                   acc = 0
 
-                # prints average EMG activity every 100 cycles
-                    if cycles % 100 == 0:
-                        print(acc/100)
-                        acc = 0
+                # Run pipeline prediction
+                output = pipeline.predict(Emg_bp0, Emg_bp1)
 
-                    output = pipeline.predict(Emg_bp0, Emg_bp1)
 
-                    if output[0] == 1:
-                        print('Cheek :O')
-                    #     if is_space_pressed:
-                            # publish(client, '1')
-                    if output[1] == 1:
-                        print('Neck B)')
-                    #     if is_space_pressed:
-                            # publish(client, '2')
+                # Suppose output is [1,0] for CHEEK, [0,1] for NECK
+                w
+                    # Send command to turtle
+                # elif output[1] == 0:
+                #     if cur_state[1] == 1:
+                        # pyautogui.keyUp('d')
 
-                    # if output[0] == 1:
-                    #     print('Cheek :O')
-                        # if keyboard.is_pressed('space'):
-                        # publish(client, '1')
-                    # if output[1] == 1:
-                    #     print('Neck B)')
-                        # if keyboard.is_pressed('space'):
-                        # publish(client, '2')
+                cur_state = output
+
+# import serial
+# from time import sleep
+# from upd_processing_pipeline import BCIProcessingPipeline
+# import socket
+# from pynput.keyboard import Key, Controller
+
+# # HOST = 'localhost'
+# # PORT = 5555
+
+# if __name__ == '__main__':
+    
+#     pipeline = BCIProcessingPipeline(buffer_size=10)
+#     port_id = "COM12"
+    
+#     print('Running. Press CTRL-C to exit.')
+#     keyboard = Controller()
+
+#     with serial.Serial(port_id, 115200, timeout=1) as arduino:
+
+#         sleep(0.1)  # Wait for serial to open
+
+#         if arduino.isOpen():
+#             print(f"{arduino.port} connected!")
+
+#             cycles = 0
+#             acc = 0
+
+#             while True:
+#                 # Wait for data from Arduino
+#                 while arduino.inWaiting() == 0:
+#                     pass
+#                 s_line = arduino.readline()
+
+#                 try:
+#                     Emg_bp0, Emg_bp1 = [
+#                         float(x) for x in s_line.decode('utf-8').strip().split(' ')
+#                     ]
+#                 except Exception as e:
+#                     print('Error decoding message', e)
+#                     continue
+
+#                 cycles += 1
+#                 acc += Emg_bp1
+#                 if cycles % 100 == 0:
+#                    print(f"Avg EMG: {acc/100}")
+#                    acc = 0
+
+#                 # Run pipeline prediction
+#                 output = pipeline.predict(Emg_bp0, Emg_bp1)
+
+#                 # Suppose output is [1,0] for CHEEK, [0,1] for NECK
+#                 if output[0] == 1:
+#                     print("Cheek :O")
+#                     keyboard.press('a')
+#                     # Send command to turtle
+#                 elif output[0] == 0:
+#                     keyboard.release('a')
+
+#                 if output[1] == 1:
+#                     keyboard.press('d')
+#                     print("Neck B)")
+#                     # Send command to turtle
+#                 elif output[1] == 1:
+#                     keyboard.release('d')

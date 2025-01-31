@@ -93,7 +93,7 @@ void loop() {
   // Serial.print(">raw EMG 0: "); Serial.println(emg_raw0);
   // Serial.print(">raw EMG 1: "); Serial.println(emg_raw1);
 
-  // // Plot bandpassed EMG signals with Teleplot
+  // Plot bandpassed EMG signals with Teleplot
   // Serial.print(">bandpass EMG 0: ");  Serial.println(emg_bp0);
   // Serial.print(">bandpass EMG 1: "); Serial.println(emg_bp1);
 }
