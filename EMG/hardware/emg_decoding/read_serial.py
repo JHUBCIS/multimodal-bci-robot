@@ -17,10 +17,6 @@ if __name__ == '__main__':
     press_time = 0
 
     print('Running. Press CTRL-C to exit.')
-    
-    cur_state = (0, 0)
-    press_time = 0
-
     with serial.Serial(port_id, 115200, timeout=1) as arduino:
 
         time.sleep(0.1)  # Wait for serial to open
@@ -54,90 +50,20 @@ if __name__ == '__main__':
                 # Run pipeline prediction
                 output = pipeline.predict(Emg_bp0, Emg_bp1)
 
+                    if output[0] == 1:
+                        print('Cheek :O')
+                        if is_space_pressed:
+                            publish(client, '1')
+                    if output[1] == 1:
+                        print('Neck B)')
+                        if is_space_pressed:
+                            publish(client, '2')
 
-                # Suppose output is [1,0] for CHEEK, [0,1] for NECK
-                
-                    # Send command to turtle
-                # elif output[1] == 0:
-                #     if cur_state[1] == 1:
-                        # pyautogui.keyUp('d')
-
-                if output[0] == 1 and (time.time() - press_time) > 0.5:
-                    print('Cheek :0')
-                    press_time = time.time()
-                    keyboard.press('a')
-                    keyboard.release('a')
-
-
-                if output[1] == 1 and (time.time() - press_time) > 0.5:
-                    print('Neck')
-                    press_time = time.time()
-                    keyboard.press('d')
-                    keyboard.release('d')
-
-                cur_state = output
-
-# import serial
-# from time import sleep
-# from upd_processing_pipeline import BCIProcessingPipeline
-# import socket
-# from pynput.keyboard import Key, Controller
-
-# # HOST = 'localhost'
-# # PORT = 5555
-
-# if __name__ == '__main__':
-    
-#     pipeline = BCIProcessingPipeline(buffer_size=10)
-#     port_id = "COM12"
-    
-#     print('Running. Press CTRL-C to exit.')
-#     keyboard = Controller()
-
-#     with serial.Serial(port_id, 115200, timeout=1) as arduino:
-
-#         sleep(0.1)  # Wait for serial to open
-
-#         if arduino.isOpen():
-#             print(f"{arduino.port} connected!")
-
-#             cycles = 0
-#             acc = 0
-
-#             while True:
-#                 # Wait for data from Arduino
-#                 while arduino.inWaiting() == 0:
-#                     pass
-#                 s_line = arduino.readline()
-
-#                 try:
-#                     Emg_bp0, Emg_bp1 = [
-#                         float(x) for x in s_line.decode('utf-8').strip().split(' ')
-#                     ]
-#                 except Exception as e:
-#                     print('Error decoding message', e)
-#                     continue
-
-#                 cycles += 1
-#                 acc += Emg_bp1
-#                 if cycles % 100 == 0:
-#                    print(f"Avg EMG: {acc/100}")
-#                    acc = 0
-
-#                 # Run pipeline prediction
-#                 output = pipeline.predict(Emg_bp0, Emg_bp1)
-
-#                 # Suppose output is [1,0] for CHEEK, [0,1] for NECK
-#                 if output[0] == 1:
-#                     print("Cheek :O")
-#                     keyboard.press('a')
-#                     # Send command to turtle
-#                 elif output[0] == 0:
-#                     keyboard.release('a')
-
-#                 if output[1] == 1:
-#                     keyboard.press('d')
-#                     print("Neck B)")
-#                     # Send command to turtle
-#                 elif output[1] == 1:
-#                     keyboard.release('d')
+                    # if output[0] == 1:
+                    #     print('Cheek :O')
+                    #     # if keyboard.is_pressed('space'):
+                    #     publish(client, '1')
+                    # if output[1] == 1:
+                    #     print('Neck B)')
+                    #     # if keyboard.is_pressed('space'):
+                    #     publish(client, '2')
