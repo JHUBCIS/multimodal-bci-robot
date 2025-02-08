@@ -53,9 +53,8 @@ if __name__ == '__main__':
                 # Run pipeline prediction
                 output = pipeline.predict(Emg_bp0, Emg_bp1)
 
-
                 # Suppose output is [1,0] for CHEEK, [0,1] for NECK
-                w
+                
                     # Send command to turtle
                 # elif output[1] == 0:
                 #     if cur_state[1] == 1:

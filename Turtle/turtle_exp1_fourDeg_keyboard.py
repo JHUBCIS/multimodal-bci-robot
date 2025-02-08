@@ -1,4 +1,5 @@
 import turtle
+from playsound import playsound
 # import socket
 # import threading
 # import queue
@@ -34,7 +35,8 @@ class TurtleController:
 
         # States for toggling movement
         self.moving_forward = False
-        self.rotating_left = False
+        self.rotating = False
+        self.direction = False
 
         # Dots to collect
         self.dot = turtle.Turtle()
@@ -122,12 +124,26 @@ class TurtleController:
         self.moving_forward = not self.moving_forward
 
     def toggle_rotation(self):
-        self.rotating_left = not self.rotating_left
-   
+        self.rotating = not self.rotating
+
+    def toggle_rotation_direction(self):
+        self.direction = not self.direction
+        if self.direction:
+            playsound(r"C:\Users\kthbl\Desktop\ssvep_live_decode\multimodal-bci-robot\Turtle\counterclockwise.wav")
+        else:
+            playsound(r"C:\Users\kthbl\Desktop\ssvep_live_decode\multimodal-bci-robot\Turtle\clockwise.wav")        
+
     def toggle_turtle1(self):
+        # if self.active_turtle == self.turtle1:
+            # playsound(r"C:\Users\kthbl\Desktop\ssvep_live_decode\multimodal-bci-robot\LSL_test\green.wav")
+            # self.active_turtle = self.turtle2
+        # else:
+        playsound(r"C:\Users\kthbl\Desktop\ssvep_live_decode\multimodal-bci-robot\LSL_test\blue.wav")
         self.active_turtle = self.turtle1
+        
 
     def toggle_turtle2(self):
+        playsound(r"C:\Users\kthbl\Desktop\ssvep_live_decode\multimodal-bci-robot\LSL_test\green.wav")
         self.active_turtle = self.turtle2
 
     
@@ -147,8 +163,10 @@ class TurtleController:
         if self.moving_forward:
             self.active_turtle.forward(self.FORWARD_SPEED)
 
-        if self.rotating_left:
+        if self.rotating and self.direction:
             self.active_turtle.left(self.TURN_SPEED)
+        elif self.rotating and not self.direction:
+            self.active_turtle.right(self.TURN_SPEED)
 
         # 3) Enforce boundaries
         self.check_boundaries()

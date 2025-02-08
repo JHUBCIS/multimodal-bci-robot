@@ -9,6 +9,9 @@ import socket
 import csv
 from scipy.stats import norm
 from pynput.keyboard import Controller
+from playsound import playsound
+
+# for playing note.mp3 file
 
 def acceptNewValue(elem : list):
    global global_values
